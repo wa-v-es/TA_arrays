@@ -70,10 +70,11 @@ plt.ion()
 fig = plt.figure(figsize=(15, 8), facecolor=None)
 ax1 = plt.subplot(1, 1, 1, projection=proj)
 
+plt.rcParams.update({'font.size': 14})
 
 # ax1.gridlines(draw_labels=False, linewidth=0.5, color='gray', alpha=0.5)
 
-ax1.set_extent([-97,-78,27,48.5], crs=ccrs.PlateCarree())
+ax1.set_extent([-95,-80,29,48.5], crs=ccrs.PlateCarree())
 
 # grat = cartopy.feature.NaturalEarthFeature(category="physical", scale="10m", name="graticules_5")
 # ax1.add_feature(grat, linewidth=0.5,linestyle="--",edgecolor="#000000",facecolor="None", zorder=2)
@@ -85,8 +86,9 @@ ax1.add_feature(cartopy.feature.STATES.with_scale('10m'),linewidth=0.5,edgecolor
 ax1.add_feature(cfeature.OCEAN.with_scale('10m'),alpha=0.1,facecolor='xkcd:azure')
 # ax1.add_feature(cfeature.LAKES.with_scale('10m'),alpha=0.3,facecolor='xkcd:dusty blue')
 
-
-ax1.plot(lons, lats, marker='^',markersize=8, linestyle='None',linewidth=.6, markerfacecolor='none', markeredgecolor='maroon', transform=ccrs.PlateCarree())
+for i,lat in enumerate(lats):
+    if lat > 34:
+        ax1.plot(lons[i], lats[i], marker='^',markersize=8, linestyle='None',linewidth=.6, markerfacecolor='none', markeredgecolor='maroon', transform=ccrs.PlateCarree())
 
 ### plot Moho tiff
 moho_file='GeophysicsMoho_USCanada/USCanada_Moho.tif'
@@ -96,7 +98,7 @@ with rasterio.open(moho_file) as src:
     extent = [src.bounds.left, src.bounds.right, src.bounds.bottom, src.bounds.top]
 image_clean = np.ma.masked_where(image < -1e+30, image)
 img=ax1.imshow(image_clean, origin='upper', extent=extent,
-transform=ccrs.PlateCarree(), cmap=cmapA, vmin=25,vmax=55)
+transform=ccrs.PlateCarree(), cmap=cmapA, vmin=25,vmax=50)
 
 gl = ax1.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                   linewidth=.8, color='gray', alpha=0.5, linestyle='--',rotate_labels=False,
@@ -111,14 +113,14 @@ gl.xformatter = LONGITUDE_FORMATTER
 gl.yformatter = LATITUDE_FORMATTER
 gl.top_labels = False
 gl.right_labels = False
-gl.xlabel_style = {'size': 14}
-gl.ylabel_style = {'size': 14}
+gl.xlabel_style = {'size': 15}
+gl.ylabel_style = {'size': 15}
 
 # sys.exit()
 
 
-cbar=plt.colorbar(img,ax=ax1,shrink=0.5, extend='max', drawedges=False, pad=0.02 )
-cbar.set_label("Moho depth (km)",fontsize=13)
+cbar=plt.colorbar(img,orientation='horizontal',location='top',ax=ax1,shrink=0.2, extend='max', drawedges=False, pad=0.02 )
+cbar.set_label("Moho depth (km)",fontsize=15)
 # fig.savefig('Moho_TA.png', dpi=400,bbox_inches='tight', pad_inches=0.1)
 plt.show()
 ##
