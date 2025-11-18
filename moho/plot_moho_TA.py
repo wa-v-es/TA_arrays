@@ -123,4 +123,40 @@ cbar=plt.colorbar(img,orientation='horizontal',location='top',ax=ax1,shrink=0.2,
 cbar.set_label("Moho depth (km)",fontsize=15)
 # fig.savefig('Moho_TA.png', dpi=400,bbox_inches='tight', pad_inches=0.1)
 plt.show()
+sys.exit()
+###
+# bit to save tif as txt file (.2 degree)
+lon_min, lon_max = -99, -70
+lat_min, lat_max = 29, 55
+
+step = 0.2
+with rasterio.open(moho_file) as src:
+    band = src.read(1)
+    transform = src.transform
+
+# Mask invalid values
+band = np.ma.masked_where(band < -1e30, band)
+
+# Coordinate grid
+lons = np.arange(lon_min, lon_max + step, step)
+lats = np.arange(lat_min, lat_max + step, step)
+
+out_data = []
+
+for lat in lats:
+    for lon in lons:
+        # convert world coordinates → raster row/col
+        col, row = ~transform * (lon, lat)
+        row, col = int(row), int(col)
+
+        # check inside raster
+        if 0 <= row < band.shape[0] and 0 <= col < band.shape[1]:
+            value = band[row, col]
+            if value is np.ma.masked:
+                continue
+            out_data.append([lat, lon, float(value)])
+
+# Save as text file
+np.savetxt("moho_region_TA.txt", out_data, fmt="%.1f  %.1f  %.1f")
 ##
+#
